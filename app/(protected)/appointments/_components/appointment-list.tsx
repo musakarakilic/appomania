@@ -40,6 +40,8 @@ import { Appointment, AppointmentService } from "@/types/appointment"
 import { useAppointmentsQuery } from "@/hooks/use-appointments-query"
 import AppointmentModal from "./appointment-modal"
 import { useQueryClient } from "@tanstack/react-query"
+import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button"
 
 interface WorkingHours {
   day: string
@@ -128,6 +130,25 @@ export default function AppointmentList({
   } | null>(null);
   const quarterHeight = 32; // Height of a 15-minute segment
 
+  // Çalışma saatlerini görmezden gelme durumu
+  const [ignoreWorkingHours, setIgnoreWorkingHours] = useState(() => {
+    // localStorage'dan değeri al
+    const savedState = localStorage.getItem('ignoreWorkingHours');
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  // ignoreWorkingHours değiştiğinde localStorage'a kaydet
+  useEffect(() => {
+    localStorage.setItem('ignoreWorkingHours', JSON.stringify(ignoreWorkingHours));
+  }, [ignoreWorkingHours]);
+
+  // ignoreWorkingHours değiştiğinde takvim görünümünü güncelle
+  useEffect(() => {
+    // Takvim görünümünü yeniden render etmek için state'i güncelle
+    setMounted(prev => !prev);
+    setMounted(prev => !prev);
+  }, [ignoreWorkingHours]);
+
   // Calculate extendedDateRange with useMemo - increased the number of visible days
   const extendedDateRange = useMemo(() => {
     // Center the selected date (equal number of days before and after)
@@ -145,32 +166,32 @@ export default function AppointmentList({
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 10, // 10px hareket etmeden sürükleme başlamaz
       },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 100,
-        tolerance: 5,
+        delay: 250, // 250ms basılı tutmadan sürükleme başlamaz
+        tolerance: 5, // 5px tolerans
       },
     })
   )
 
   // Çalışma saatlerini getir
-  useEffect(() => {
-    const fetchWorkingHours = async () => {
-      try {
-        const response = await fetch("/api/settings/working-hours")
-        if (!response.ok) throw new Error("Failed to fetch working hours")
-        const data = await response.json()
-        setWorkingHours(data)
-      } catch (error) {
-        console.error("Error fetching working hours:", error)
-        toast.error("Error loading working hours")
-      }
+  const getWorkingHours = async () => {
+    try {
+      const response = await fetch("/api/settings/working-hours")
+      if (!response.ok) throw new Error("Failed to fetch working hours")
+      const data = await response.json()
+      setWorkingHours(data)
+    } catch (error) {
+      console.error("Error fetching working hours:", error)
+      toast.error("Error loading working hours")
     }
+  }
 
-    fetchWorkingHours()
+  useEffect(() => {
+    getWorkingHours()
   }, [])
 
   // Gün dönüşüm fonksiyonu
@@ -182,6 +203,8 @@ export default function AppointmentList({
   
   // Günün açık olup olmadığını kontrol et
   const isDayOpen = (date: Date): boolean => {
+    if (ignoreWorkingHours) return true; // Çalışma saatleri görmezden geliniyorsa her zaman açık
+    
     if (!workingHours || workingHours.length === 0) return true;
     
     const dayName = getDayString(date.getDay());
@@ -209,64 +232,58 @@ export default function AppointmentList({
   
   // Belirli bir saat diliminin açık olup olmadığını kontrol et
   const isTimeSlotOpen = (date: Date, timeSlot: string): boolean => {
+    if (ignoreWorkingHours) return true; // Çalışma saatleri görmezden geliniyorsa her zaman açık
+    
     // Önce günün açık olup olmadığını kontrol et
     if (!isDayOpen(date)) return false;
     
     const dayName = getDayString(date.getDay());
-    const daySettings = workingHours.find(wh => wh.day === dayName);
+    const daySettings = workingHours?.find(wh => wh.day === dayName);
     
     // Eğer ayar bulunamazsa veya açık değilse false döndür
     if (!daySettings || !daySettings.isOpen) return false;
     
     // Saat bilgisini al
-    const [timeStr, period] = timeSlot.split(' ')
-    const [hourStr] = timeStr.split(':');
-    let hour = parseInt(hourStr);
+    const [hourStr, minuteStr] = timeSlot.split(':');
+    const hour = parseInt(hourStr);
+    const minute = parseInt(minuteStr || "0");
     
-    // 12 saat formatından 24 saat formatına çevir
-    if (period === 'PM' && hour !== 12) hour += 12;
-    if (period === 'AM' && hour === 12) hour = 0;
-    
-    // 24 saat formatında HH:00 şeklinde
-    const formattedTime = `${hour.toString().padStart(2, '0')}:00`;
-    const formattedTimeNextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
+    // 24 saat formatında HH:MM şeklinde
+    const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     
     // Çalışma saatleri içinde mi kontrol et
     const isInWorkingHours = isTimeInRange(formattedTime, daySettings.startTime, daySettings.endTime);
     
     // Mola zamanına denk gelip gelmediğini kontrol et
-    const isBreakTime = isTimeInRange(formattedTime, daySettings.breakStart, daySettings.breakEnd);
+    const isInBreakTime = isTimeInRange(formattedTime, daySettings.breakStart, daySettings.breakEnd);
     
     // Çalışma saatleri içinde ve mola zamanı dışındaysa açıktır
-    return isInWorkingHours && !isBreakTime;
+    return isInWorkingHours && !isInBreakTime;
   };
 
   // Check if a time slot is during break time
   const isBreakTime = (date: Date, timeSlot: string): boolean => {
+    if (ignoreWorkingHours) return false; // Çalışma saatleri görmezden geliniyorsa mola zamanı yok
+    
     if (!isDayOpen(date)) return false;
     
     const dayName = getDayString(date.getDay());
-    const daySettings = workingHours.find(wh => wh.day === dayName);
+    const daySettings = workingHours?.find(wh => wh.day === dayName);
     
-    if (!daySettings || !daySettings.isOpen) return false;
+    if (!daySettings || !daySettings.isOpen) {
+      return false;
+    }
     
-    // Get time information
-    const [timeStr, period] = timeSlot.split(' ');
-    const [hourStr] = timeStr.split(':');
-    let hour = parseInt(hourStr);
+    // Saat bilgisini al
+    const [hourStr, minuteStr] = timeSlot.split(':');
+    const hour = parseInt(hourStr);
+    const minute = parseInt(minuteStr || "0");
     
-    // Convert from 12-hour format to 24-hour format
-    if (period === 'PM' && hour !== 12) hour += 12;
-    if (period === 'AM' && hour === 12) hour = 0;
+    // 24 saat formatında HH:MM şeklinde
+    const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     
-    // Format as HH:00 in 24-hour format
-    const formattedTime = `${hour.toString().padStart(2, '0')}:00`;
-    
-    // Check if within working hours and during break time
-    const isInWorkingHours = isTimeInRange(formattedTime, daySettings.startTime, daySettings.endTime);
-    const isTakingBreak = isTimeInRange(formattedTime, daySettings.breakStart, daySettings.breakEnd);
-    
-    return isInWorkingHours && isTakingBreak;
+    // Mola zamanına denk gelip gelmediğini kontrol et
+    return isTimeInRange(formattedTime, daySettings.breakStart, daySettings.breakEnd);
   };
 
   // Çakışma kontrolü için geliştirilmiş fonksiyon
@@ -297,14 +314,19 @@ export default function AppointmentList({
   }
 
   const handleDragStart = (event: DragStartEvent) => {
-    setIsDragging(true)
+    const { active } = event;
+    setIsDragging(true);
+    
     // Parse the composite ID to get the appointment ID
-    const [appointmentId] = (event.active.id as string).split('-')
-    const appointment = appointments.find((app: Appointment) => app.id === appointmentId)
+    const [appointmentId] = (active.id as string).split('-');
+    const appointment = appointments.find((app: Appointment) => app.id === appointmentId);
+    
     if (appointment) {
-      setActiveAppointment(appointment)
+      setActiveAppointment(appointment);
+      // Debug için log ekleyelim
+      console.log('Drag started:', { appointmentId, appointment });
     }
-  }
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     setIsDragging(false)
@@ -389,10 +411,7 @@ export default function AppointmentList({
     // If working hours haven't been loaded yet, try loading them again
     if (workingHours.length === 0) {
       try {
-        const response = await fetch("/api/settings/working-hours")
-        if (!response.ok) throw new Error("Failed to fetch working hours")
-        const data = await response.json()
-        setWorkingHours(data)
+        await getWorkingHours()
       } catch (error) {
         console.error("Error fetching working hours:", error)
         toast.error("Error loading working hours")
@@ -437,45 +456,41 @@ export default function AppointmentList({
     }
     
     // Saat aralığını belirle
-    const [hourStr, period] = timeStr.split(' ')
-    const hour = parseInt(hourStr, 10)
+    const [hourStr, period] = timeStr.split(' ');
+    const hour = parseInt(hourStr, 10);
     
     // 12 saat formatından 24 saat formatına çevir
-    let adjustedHour = hour
-    if (period === 'PM' && hour !== 12) adjustedHour += 12
-    if (period === 'AM' && hour === 12) adjustedHour = 0
+    let adjustedHour = hour;
+    if (period === 'PM' && hour !== 12) adjustedHour += 12;
+    if (period === 'AM' && hour === 12) adjustedHour = 0;
     
     // Tarih ve saat oluştur
-    const startOfTimeSlot = new Date(day)
-    startOfTimeSlot.setHours(adjustedHour, 0, 0, 0)
-    const endOfTimeSlot = new Date(day)
-    endOfTimeSlot.setHours(adjustedHour + 1, 0, 0, 0)
+    const startOfTimeSlot = new Date(day);
+    startOfTimeSlot.setHours(adjustedHour, 0, 0, 0);
+    const endOfTimeSlot = new Date(day);
+    endOfTimeSlot.setHours(adjustedHour + 1, 0, 0, 0);
     
     // Format ile karşılaştırmak için
-    const dayStr = format(day, "yyyy-MM-dd")
+    const dayStr = format(day, "yyyy-MM-dd");
     
     // Bu saat dilimine denk gelen randevuları filtrele
     return appointments.filter((appointment: Appointment) => {
       try {
-        const appointmentStart = parseISO(appointment.startTime)
-        const appointmentEnd = parseISO(appointment.endTime)
+        const appointmentStart = parseISO(appointment.startTime);
+        const appointmentEnd = parseISO(appointment.endTime);
         
         // Aynı gün mü kontrol et
-        const appointmentDayStr = format(appointmentStart, "yyyy-MM-dd")
-        if (appointmentDayStr !== dayStr) return false
+        const appointmentDayStr = format(appointmentStart, "yyyy-MM-dd");
+        if (appointmentDayStr !== dayStr) return false;
         
-        // Randevu başlangıcı veya bitişi bu saat dilimine denk geliyor mu?
-        const startsInThisSlot = appointmentStart >= startOfTimeSlot && appointmentStart < endOfTimeSlot
-        const endsInThisSlot = appointmentEnd > startOfTimeSlot && appointmentEnd <= endOfTimeSlot
-        const spansThisSlot = appointmentStart <= startOfTimeSlot && appointmentEnd >= endOfTimeSlot
-        
-        return startsInThisSlot || endsInThisSlot || spansThisSlot
+        // Sadece randevunun başlangıç saatine denk gelen zaman diliminde göster
+        return appointmentStart >= startOfTimeSlot && appointmentStart < endOfTimeSlot;
       } catch (error) {
-        // Silent error handling for date parsing
-        return false
+        console.error('Error processing appointment:', error);
+        return false;
       }
-    })
-  }
+    });
+  };
 
   // Auto-scroll effect - rewritten version
   useEffect(() => {
@@ -592,10 +607,16 @@ export default function AppointmentList({
     }
   }, [])
 
-  // handleDateNavigation fonksiyonu - günlük navigasyon
+  // handleDateNavigation fonksiyonu - aylık navigasyon
   const handleDateNavigation = (direction: "prev" | "next") => {
-    const amount = direction === "prev" ? -1 : 1;
-    const newDate = addDays(selectedDate, amount);
+    const newDate = new Date(selectedDate);
+    if (direction === "prev") {
+      // Önceki ay
+      newDate.setMonth(newDate.getMonth() - 1);
+    } else {
+      // Sonraki ay
+      newDate.setMonth(newDate.getMonth() + 1);
+    }
     onDateChange(newDate);
   };
 
@@ -653,6 +674,7 @@ export default function AppointmentList({
       status: 'PENDING',
       createdAt: new Date(),
       updatedAt: new Date(),
+      isManual: ignoreWorkingHours,
       ...appointment
     } as Appointment : null)
     setIsModalOpen(true)
@@ -797,33 +819,15 @@ export default function AppointmentList({
       const deltaMinutes = deltaQuarters * 15;
       const newDuration = Math.max(15, resizingAppointment.currentDuration + deltaMinutes);
 
-      // Update services
-      const updatedServices = appointment.appointmentServices.map((as: AppointmentService) => {
-        if (as.service.id === serviceId) {
-          return {
-            ...as,
-            service: {
-              ...as.service,
-              duration: newDuration // Set the new duration directly
-            }
-          };
-        }
-        return as;
-      });
-
-      // Calculate total duration
-      const totalDuration = updatedServices.reduce((total: number, as: AppointmentService) => total + as.service.duration, 0);
-
       // Get start time and calculate new end time
       const startTime = parseISO(appointment.startTime);
-      const endTime = addMinutes(startTime, totalDuration);
+      const endTime = addMinutes(startTime, newDuration);
 
       // Update appointment
       const updatedAppointment = {
         ...appointment,
         startTime: format(startTime, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
         endTime: format(endTime, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
-        appointmentServices: updatedServices
       };
 
       // Update API
@@ -833,34 +837,7 @@ export default function AppointmentList({
         throw new Error('Update failed');
       }
 
-      // Update cache
-      await queryClient.setQueryData(
-        ['appointments', format(selectedDate, 'yyyy-MM-dd')],
-        (oldData: Appointment[] | undefined) => {
-          if (!oldData) return [updatedAppointment];
-          return oldData.map(app => 
-            app.id === appointmentId ? updatedAppointment : app
-          );
-        }
-      );
-
-      // Success message
       toast.success('Appointment duration updated');
-      
-      // Make visual update permanent
-      const element = document.querySelector(`[data-appointment-id="${resizingAppointment.id}"]`) as HTMLDivElement;
-      if (element) {
-        const newHeight = Math.ceil(newDuration / 15) * quarterHeight;
-        element.style.height = `${newHeight}px`;
-        
-        // Update time display
-        const timeElement = element.querySelector('[data-appointment-time]');
-        if (timeElement) {
-          const formattedStartTime = format(startTime, 'HH:mm');
-          const formattedEndTime = format(endTime, 'HH:mm');
-          timeElement.textContent = `${formattedStartTime} - ${formattedEndTime}`;
-        }
-      }
 
     } catch (error) {
       console.error('Update error:', error);
@@ -871,12 +848,9 @@ export default function AppointmentList({
       if (element) {
         element.style.height = `${resizingAppointment.initialHeight}px`;
       }
-    }
-
-    // Use timeout to prevent click event from triggering and opening modal
-    setTimeout(() => {
+    } finally {
       setResizingAppointment(null);
-    }, 100);
+    }
   };
 
   if (error) {
@@ -894,27 +868,33 @@ export default function AppointmentList({
         <header className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={handleTodayClick}
-                className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 Today
-              </button>
+              </Button>
               <div className="flex items-center gap-3">
                 <div className="flex items-center">
-                  <button 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => handleDateNavigation("prev")}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                  </button>
+                  </Button>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <button className="px-3 py-1.5 text-lg font-medium hover:bg-gray-100 rounded-lg">
+                      <Button
+                        variant="outline"
+                        className="min-w-[240px] justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
                         {format(selectedDate, "MMMM yyyy", { locale: enUS })}
-                      </button>
+                      </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
                         selected={selectedDate}
@@ -922,12 +902,13 @@ export default function AppointmentList({
                       />
                     </PopoverContent>
                   </Popover>
-                  <button 
+                  <Button
+                    variant="outline"
+                    size="icon"
                     onClick={() => handleDateNavigation("next")}
-                    className="p-1.5 rounded-lg hover:bg-gray-100"
                   >
                     <ChevronRight className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -968,16 +949,23 @@ export default function AppointmentList({
                   </div>
                 </PopoverContent>
               </Popover>
-              <SettingsMenu />
+              <SettingsMenu onOpenQuickModal={() => handleOpenModal('quick')} />
             </div>
 
-            <button
-              onClick={() => handleOpenModal('create')}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-            >
-              <Plus className="h-4 w-4" />
-              Create Appointment
-            </button>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="ignore-working-hours"
+                checked={ignoreWorkingHours}
+                onCheckedChange={setIgnoreWorkingHours}
+              />
+              <label htmlFor="ignore-working-hours" className="text-sm font-medium">
+                Ignore working hours
+              </label>
+            </div>
+
+            <Button onClick={() => handleOpenModal('create')}>
+              <Plus className="mr-2 h-4 w-4" /> New Appointment
+            </Button>
           </div>
         </header>
 
@@ -1083,38 +1071,30 @@ export default function AppointmentList({
                         // Determine if this is a break time specifically
                         const isBreakTimeSlot = isBreakTime(day, timeSlot.display);
                         
-                        let statusIcon = null;
-                        
-                        if (!dayOpen) {
-                          statusIcon = <Lock size={14} className="text-red-500/70" />;
-                        } else if (isBreakTimeSlot) {
-                          statusIcon = <MoonStar size={14} className="text-amber-500/70" />;
-                        } else if (!timeSlotOpen) {
-                          statusIcon = <Clock size={14} className="text-red-500/70" />;
-                        }
-                        
                         return (
                           <DroppableCell
                             key={cellId}
                             id={cellId}
                             className={cn(
                               "border-r border-b border-gray-100 relative",
-                              !dayOpen && "bg-gradient-to-br from-gray-100 to-gray-200 [background-size:10px_10px] [background-image:repeating-linear-gradient(45deg,#0000_0,#0000_5px,#f0f0f0_0,#f0f0f0_1px)]", // Closed day - striped pattern
-                              dayOpen && isBreakTimeSlot && "bg-gradient-to-r from-amber-50 to-amber-100/30 border-l-2 border-l-amber-200", // Break time - amber tones
-                              dayOpen && !timeSlotOpen && !isBreakTimeSlot && "bg-gradient-to-r from-red-50 to-red-100/30 border-l-2 border-l-red-200" // Outside working hours - red tones
+                              !dayOpen && !ignoreWorkingHours && "bg-gradient-to-br from-gray-100 to-gray-200 [background-size:10px_10px] [background-image:repeating-linear-gradient(45deg,#0000_0,#0000_5px,#f0f0f0_0,#f0f0f0_1px)]", // Closed day - striped pattern
+                              dayOpen && isBreakTimeSlot && !ignoreWorkingHours && "bg-gradient-to-r from-amber-50 to-amber-100/30 border-l-2 border-l-amber-200", // Break time - amber tones
+                              dayOpen && !timeSlotOpen && !isBreakTimeSlot && !ignoreWorkingHours && "bg-gradient-to-r from-red-50 to-red-100/30 border-l-2 border-l-red-200" // Outside working hours - red tones
                             )}
-                            disabled={!dayOpen || !timeSlotOpen}
+                            disabled={!ignoreWorkingHours && (!dayOpen || !timeSlotOpen)}
                           >
-                            {/* Status icon for closed slots */}
-                            {(!dayOpen || !timeSlotOpen) && (
-                              <div className="absolute top-1 right-1 z-10 flex items-center gap-1">
-                                {statusIcon}
+                            {/* Closed day indicator */}
+                            {!dayOpen && !ignoreWorkingHours && (
+                              <div className="absolute mt-10 inset-0 flex items-center justify-center opacity-70 pointer-events-none z-10">
+                                <div className="flex flex-col items-center justify-center">
+                                  <div className="text-xs text-red-800 font-medium">Closed</div>
+                                </div>
                               </div>
                             )}
                             
                             {/* Break time indicator */}
-                            {dayOpen && isBreakTimeSlot && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                            {dayOpen && isBreakTimeSlot && !ignoreWorkingHours && (
+                              <div className="absolute mt-10 inset-0 flex items-center justify-center opacity-30 pointer-events-none">
                                 <div className="flex flex-col items-center">
                                   <MoonStar size={16} className="text-amber-600 mb-1" />
                                   <div className="text-[10px] text-amber-800 font-medium">Break Time</div>
@@ -1123,8 +1103,8 @@ export default function AppointmentList({
                             )}
                             
                             {/* Outside working hours indicator */}
-                            {dayOpen && !timeSlotOpen && !isBreakTimeSlot && (
-                              <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                            {dayOpen && !timeSlotOpen && !isBreakTimeSlot && !ignoreWorkingHours && (
+                              <div className="absolute mt-10 inset-0 flex items-center justify-center opacity-30 pointer-events-none">
                                 <div className="flex flex-col items-center">
                                   <Clock size={16} className="text-red-600 mb-1" />
                                   <div className="text-[10px] text-red-800 font-medium">Closed</div>

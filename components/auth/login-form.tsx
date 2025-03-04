@@ -1,15 +1,15 @@
-"use client" // Bu ifade, bileşenin yalnızca istemci tarafında çalışacağını belirtir.
+"use client" // This indicates that the component will only run on the client side.
 
-import * as z from "zod" // zod kütüphanesini z olarak içe aktarıyoruz. Bu kütüphane, veri doğrulama ve şema tanımlama için kullanılır.
+import * as z from "zod" // Importing the zod library as z. This library is used for data validation and schema definition.
 
-import { useState, useTransition } from "react" // React'ten useState ve useTransition hook'larını içe aktarıyoruz.
-import { useForm } from "react-hook-form" // Form yönetimi için react-hook-form kütüphanesinden useForm hook'unu içe aktarıyoruz.
-import { useSearchParams } from "next/navigation" // URL'deki query parametrelerini almak için useSearchParams hook'unu içe aktarıyoruz.
-import { zodResolver } from "@hookform/resolvers/zod" // zod kütüphanesini react-hook-form ile entegre eden resolver'ı içe aktarıyoruz.
-import Link from "next/link" // Link oluşturmak için Next.js'ten Link bileşenini içe aktarıyoruz.
+import { useState, useTransition } from "react" // Importing useState and useTransition hooks from React.
+import { useForm } from "react-hook-form" // Importing useForm hook from react-hook-form for form management.
+import { useSearchParams } from "next/navigation" // Importing useSearchParams hook to get query parameters from the URL.
+import { zodResolver } from "@hookform/resolvers/zod" // Importing the resolver that integrates zod with react-hook-form.
+import Link from "next/link" // Importing Link component from Next.js to create links.
 
-import { LoginSchema } from "@/schemas" // Giriş formu için kullanılan zod şemasını içe aktarıyoruz.
-import { Input } from "../ui/input" // Input bileşenini içe aktarıyoruz.
+import { LoginSchema } from "@/schemas" // Importing the zod schema used for the login form.
+import { Input } from "../ui/input" // Importing the Input component.
 
 import {
   Form,
@@ -18,68 +18,68 @@ import {
   FormItem,
   FormLabel,
   FormMessage
-} from "@/components/ui/form" // Form yapısını oluşturan bileşenleri içe aktarıyoruz.
+} from "@/components/ui/form" // Importing components that make up the form structure.
 
-import { CardWrapper } from "@/components/auth/card-wrapper" // Formu saran kart bileşenini içe aktarıyoruz.
-import { Button } from "../ui/button" // Button bileşenini içe aktarıyoruz.
+import { CardWrapper } from "@/components/auth/card-wrapper" // Importing the card component that wraps the form.
+import { Button } from "../ui/button" // Importing the Button component.
 
-import { FormError } from "@/components/form-error" // Form hatalarını göstermek için kullanılan bileşeni içe aktarıyoruz.
-import { FormSuccess } from "@/components/form-success" // Başarı mesajlarını göstermek için kullanılan bileşeni içe aktarıyoruz.
-import { login } from "@/actions/login" // Giriş işlemini gerçekleştiren login fonksiyonunu içe aktarıyoruz.
+import { FormError } from "@/components/form-error" // Importing the component used to display form errors.
+import { FormSuccess } from "@/components/form-success" // Importing the component used to display success messages.
+import { login } from "@/actions/login" // Importing the login function that performs the login action.
 import { Social } from "./social"
 
 const LoginForm = () => {
-  // URL'den query parametrelerini almak için useSearchParams hook'unu kullanıyoruz.
+  // Using the useSearchParams hook to get query parameters from the URL.
   const searchParams = useSearchParams();
-  // Eğer URL'deki "error" parametresi "OAuthAccountNotLinked" ise bir hata mesajı ayarlıyoruz.
-  const urlError = searchParams.get("error") === "OAuthAccountNotLinked" 
-  ? "Email already in use with different provider!" // Eğer email başka bir sağlayıcı ile ilişkilendirilmişse, bu hata mesajını gösteriyoruz.
+  // If the "error" parameter in the URL is "OAuthAccountNotLinked", we set an error message.
+  const urlError = searchParams?.get("error") === "OAuthAccountNotLinked" 
+  ? "Email already in use with different provider!" // If the email is associated with another provider, we show this error message.
   : "";
 
-  // Durum (state) yönetimi için useState hook'unu kullanıyoruz.
-  const [showTwoFactor, setShowTwoFactor] = useState(false); // İki faktörlü doğrulama kodunun gösterilip gösterilmeyeceğini kontrol eden durum.
-  const [error, setError] = useState<string | undefined>(""); // Hata mesajlarını tutan durum.
-  const [success, setSuccess] = useState<string | undefined>(""); // Başarı mesajlarını tutan durum.
-  const [isPending, startTransition] = useTransition(); // Geçiş sırasında yüklenme durumunu yönetmek için useTransition hook'unu kullanıyoruz.
+  // Using useState hook for state management.
+  const [showTwoFactor, setShowTwoFactor] = useState(false); // State that controls whether to show the two-factor authentication code.
+  const [error, setError] = useState<string | undefined>(""); // State that holds error messages.
+  const [success, setSuccess] = useState<string | undefined>(""); // State that holds success messages.
+  const [isPending, startTransition] = useTransition(); // Using useTransition hook to manage loading state during transitions.
 
-  // Form yönetimi için useForm hook'unu kullanıyoruz. Zod şemasını kullanarak form doğrulamasını ayarlıyoruz.
+  // Using useForm hook for form management. Setting up form validation using the zod schema.
   const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema), // Zod şemasını react-hook-form ile entegre ediyoruz.
+    resolver: zodResolver(LoginSchema), // Integrating the zod schema with react-hook-form.
     defaultValues: {
-      email: "", // Varsayılan email değeri boş.
-      password: "", // Varsayılan parola değeri boş.
+      email: "", // Default email value is empty.
+      password: "", // Default password value is empty.
     }
   });
 
-  // Form gönderildiğinde çalışacak olan fonksiyon.
+  // Function that runs when the form is submitted.
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    setError(""); // Hata durumunu sıfırlıyoruz.
-    setSuccess(""); // Başarı durumunu sıfırlıyoruz.
+    setError(""); // Resetting the error state.
+    setSuccess(""); // Resetting the success state.
 
-    // Yüklenme durumunu yönetmek için startTransition kullanıyoruz.
+    // Using startTransition to manage loading state.
     startTransition(() => {
-      // Login işlemi yapılıyor.
+      // Performing the login action.
       login(values)
         .then((data) => {
-          if (data?.error) { // Eğer bir hata oluşmuşsa,
-            form.reset(); // Formu sıfırlıyoruz.
-            setError(data.error); // Hata mesajını ayarlıyoruz.
+          if (data?.error) { // If an error occurs,
+            form.reset(); // Resetting the form.
+            setError(data.error); // Setting the error message.
           }
 
-          if (data?.success) { // Eğer giriş başarılı olmuşsa,
-            form.reset(); // Formu sıfırlıyoruz.
-            setSuccess(data.success); // Başarı mesajını ayarlıyoruz.
+          if (data?.success) { // If login is successful,
+            form.reset(); // Resetting the form.
+            setSuccess(data.success); // Setting the success message.
           }
 
-          if (data?.twoFactor) { // Eğer iki faktörlü doğrulama gerekiyorsa,
-            setShowTwoFactor(true); // İki faktörlü doğrulama kodunu gösteriyoruz.
+          if (data?.twoFactor) { // If two-factor authentication is required,
+            setShowTwoFactor(true); // Showing the two-factor authentication code.
           }
         })
-        .catch(() => setError("Something went wrong!")); // Bir hata olursa genel bir hata mesajı gösteriyoruz.
+        .catch(() => setError("Something went wrong!")); // If an error occurs, showing a general error message.
     });
   };
 
-  // Formun JSX yapısı.
+  // Form's JSX structure.
   return (
     <div className="w-full space-y-6 sm:max-w-[400px] p-4">
       <div className="flex flex-col space-y-2 text-center">
@@ -106,7 +106,7 @@ const LoginForm = () => {
 
       <Form {...form}>
         <form 
-          onSubmit={form.handleSubmit(onSubmit)} // Form gönderildiğinde onSubmit fonksiyonunu çalıştırır.
+          onSubmit={form.handleSubmit(onSubmit)} // Form submission triggers the onSubmit function.
           className="space-y-4"
         >
           {showTwoFactor ? (
@@ -200,7 +200,7 @@ const LoginForm = () => {
 
       <div className="flex flex-col gap-2 text-center mt-6">
         <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a href="/auth/register" className="underline hover:text-primary">
             Sign up
           </a>
@@ -213,4 +213,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm; // LoginForm bileşenini dışa aktarıyoruz.
+export default LoginForm; // Exporting LoginForm component.

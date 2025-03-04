@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { auth } from "@/auth"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const session = await auth()
@@ -20,9 +22,7 @@ export async function GET() {
 
 
     // Servisleri direkt olarak JSON olarak dön
-    return new NextResponse(JSON.stringify(services), {
-      headers: { 'Content-Type': 'application/json' }
-    })
+    return NextResponse.json(services)
 
   } catch (error) {
     console.error("[SERVICES_GET]", error)

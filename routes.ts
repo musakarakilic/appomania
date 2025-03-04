@@ -45,5 +45,6 @@ export const routes = {
         services: "/settings/services",
         notifications: "/settings/notifications",
         account: "/settings/account",
+        staff: "/settings/staff",
     }
 }

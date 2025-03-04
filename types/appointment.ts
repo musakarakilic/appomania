@@ -29,6 +29,7 @@ export interface CreateAppointmentDTO {
   startTime: string
   endTime: string
   serviceIds: string[]
+  isManual?: boolean
 }
 
 export interface UpdateAppointmentDTO extends Omit<Appointment, 'appointmentServices'> {

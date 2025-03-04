@@ -4,22 +4,22 @@ import "./globals.css";
 import { ClientProvider } from "@/lib/providers/client-provider"
 import QueryProvider from "@/components/providers/query-provider"
 
-// Google Poppins fontunu tanımlıyoruz
+// Define Google Poppins font
 const poppins = Poppins({ 
   subsets: ["latin"], 
   weight: ["400", "500", "600", "700"],
   display: 'swap',
 });
 
-// Metadata'yı tanımlıyoruz
+// Define metadata
 export const metadata: Metadata = {
-  title: "AppointFlow | Professional Appointment Management System",
+  title: "Appomania | Professional Appointment Management System",
   description: "Transform your business with our modern appointment management solution. Streamline scheduling, boost efficiency, and deliver premium customer experiences.",
   keywords: "appointment management, business scheduling, online booking system, professional scheduling",
-  authors: [{ name: "AppointFlow Team" }],
+  authors: [{ name: "Appomania Team" }],
 };
 
-// Viewport'u ayrı olarak tanımlıyoruz
+// Define viewport separately
 export const viewport = {
   width: "device-width",
   initialScale: 1,

@@ -73,22 +73,22 @@ export default function AccountPage() {
 
   const handlePasswordChange = async () => {
     if (!newPassword.trim()) {
-      toast.error("New password cannot be empty / Yeni şifre boş olamaz")
+      toast.error("New password cannot be empty")
       return
     }
 
     if (!confirmPassword.trim()) {
-      toast.error("Confirm password cannot be empty / Şifre onayı boş olamaz")
+      toast.error("Confirm password cannot be empty")
       return
     }
 
     if (hasPassword && !currentPassword.trim()) {
-      toast.error("Current password cannot be empty / Mevcut şifre boş olamaz")
+      toast.error("Current password cannot be empty")
       return
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("New passwords do not match / Yeni şifreler eşleşmiyor")
+      toast.error("New passwords do not match")
       return
     }
 
@@ -142,8 +142,8 @@ export default function AccountPage() {
       setSettings(prev => ({ ...prev, isTwoFactorEnabled: checked }))
       toast.success(
         checked 
-          ? "Two-factor authentication enabled / İki faktörlü doğrulama etkinleştirildi"
-          : "Two-factor authentication disabled / İki faktörlü doğrulama devre dışı bırakıldı"
+          ? "Two-factor authentication enabled"
+          : "Two-factor authentication disabled"
       )
     } catch (error) {
       console.error(error)
@@ -177,9 +177,9 @@ export default function AccountPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Profile Information / Profil Bilgileri</CardTitle>
+            <CardTitle>Profile Information</CardTitle>
             <CardDescription>
-              Update your personal information / Kişisel bilgilerinizi güncelleyin
+              Update your personal information
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,12 +187,12 @@ export default function AccountPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4 text-muted-foreground" />
-                  <Label>Full Name / İsim Soyisim</Label>
+                  <Label>Full Name</Label>
                 </div>
                 <Input
                   value={settings.name}
                   onChange={(e) => setSettings(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Full Name / İsim Soyisim"
+                  placeholder="Full Name"
                 />
               </div>
 
@@ -210,7 +210,7 @@ export default function AccountPage() {
                 />
                 {isOAuthUser && (
                   <p className="text-sm text-muted-foreground">
-                    Email cannot be changed for OAuth accounts / OAuth hesapları için email değiştirilemez
+                    Email cannot be changed for OAuth accounts
                   </p>
                 )}
               </div>
@@ -220,10 +220,10 @@ export default function AccountPage() {
                   {isProfileSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving... / Kaydediliyor...
+                      Saving...
                     </>
                   ) : (
-                    "Save / Kaydet"
+                    "Save"
                   )}
                 </Button>
               </div>
@@ -233,11 +233,11 @@ export default function AccountPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Password / Şifre</CardTitle>
+            <CardTitle>Password</CardTitle>
             <CardDescription>
               {hasPassword 
-                ? "Change your password regularly for account security / Hesap güvenliğiniz için şifrenizi düzenli olarak değiştirin"
-                : "Set up a password for your account / Hesabınız için bir şifre belirleyin"
+                ? "Change your password regularly for account security"
+                : "Set up a password for your account"
               }
             </CardDescription>
           </CardHeader>
@@ -247,9 +247,7 @@ export default function AccountPage() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    You're using {user?.provider} to sign in. Setting up a password will allow you to also sign in with email.
-                    <br />
-                    {user?.provider} ile giriş yapıyorsunuz. Şifre belirleyerek email ile de giriş yapabilirsiniz.
+                    You&apos;re using {user?.provider} to sign in. Setting up a password will allow you to also sign in with email.
                   </AlertDescription>
                 </Alert>
               )}
@@ -258,13 +256,13 @@ export default function AccountPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <KeyRound className="w-4 h-4 text-muted-foreground" />
-                    <Label>Current Password / Mevcut Şifre</Label>
+                    <Label>Current Password</Label>
                   </div>
                   <Input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password / Mevcut şifrenizi girin"
+                    placeholder="Enter current password"
                   />
                 </div>
               )}
@@ -272,26 +270,26 @@ export default function AccountPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <KeyRound className="w-4 h-4 text-muted-foreground" />
-                  <Label>New Password / Yeni Şifre</Label>
+                  <Label>New Password</Label>
                 </div>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password / Yeni şifre girin"
+                  placeholder="Enter new password"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <KeyRound className="w-4 h-4 text-muted-foreground" />
-                  <Label>Confirm Password / Şifreyi Onayla</Label>
+                  <Label>Confirm Password</Label>
                 </div>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password / Yeni şifreyi onaylayın"
+                  placeholder="Confirm new password"
                 />
               </div>
 
@@ -300,10 +298,10 @@ export default function AccountPage() {
                   {isPasswordSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {hasPassword ? "Changing... / Değiştiriliyor..." : "Setting... / Ayarlanıyor..."}
+                      {hasPassword ? "Changing..." : "Setting..."}
                     </>
                   ) : (
-                    hasPassword ? "Change Password / Şifreyi Değiştir" : "Set Password / Şifre Belirle"
+                    hasPassword ? "Change Password" : "Set Password"
                   )}
                 </Button>
               </div>
@@ -313,9 +311,9 @@ export default function AccountPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Security / Güvenlik</CardTitle>
+            <CardTitle>Security</CardTitle>
             <CardDescription>
-              Manage your account security settings / Hesap güvenlik ayarlarınızı yönetin
+              Manage your account security settings
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -323,10 +321,10 @@ export default function AccountPage() {
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-muted-foreground" />
-                  <Label>Two Factor Authentication / İki Faktörlü Doğrulama</Label>
+                  <Label>Two Factor Authentication</Label>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Add an extra layer of security when signing in / Giriş yaparken ek güvenlik katmanı ekleyin
+                  Add an extra layer of security when signing in
                 </p>
               </div>
               <Switch
@@ -336,8 +334,7 @@ export default function AccountPage() {
               />
               {!hasPassword && !settings.isTwoFactorEnabled && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  You must set a password before enabling two-factor authentication /
-                  İki faktörlü doğrulamayı etkinleştirmek için önce bir şifre belirlemelisiniz
+                  You must set a password before enabling two-factor authentication
                 </p>
               )}
             </div>

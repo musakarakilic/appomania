@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 import authConfig from "./auth.config";
 
 import { db } from "./lib/db";
@@ -66,7 +66,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       // Kullanıcının rolü oturumda mevcutsa, oturuma kullanıcı rolü eklenir.
       if (token.role && session.user) {
-        session.user.role = token.role;
+        session.user.role = token.role as UserRole;
       }
       if (session.user) {
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;

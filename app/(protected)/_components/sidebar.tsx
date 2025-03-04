@@ -14,7 +14,9 @@ import {
   LogOut,
   Home,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  UserPlus,
+  Hourglass
 } from "lucide-react"
 import { logout } from "@/actions/logout"
 import { Button } from "@/components/ui/button"
@@ -24,7 +26,7 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
 interface RouteItem {
-  icon: typeof Settings | typeof Calendar | typeof Users;
+  icon: typeof Settings | typeof Calendar | typeof Users | typeof UserPlus;
   label: string;
   href: string;
   hasLightning?: boolean;
@@ -40,21 +42,27 @@ const mainRoutes: RouteItem[] = [
 
 const appointmentRoutes: RouteItem[] = [
   {
-    icon: Settings,
-    label: "Working Hours",
-    href: "/settings/working-hours",
-  },
-  {
     icon: Users,
     label: "Services",
     href: "/settings/services",
+  },
+  {
+    icon: Hourglass,
+    label: "Working Hours",
+    href: "/settings/working-hours",
+  },
+  
+  {
+    icon: UserPlus,
+    label: "Staff Management",
+    href: "/settings/staff",
   },
 ]
 
 const settingsRoutes: RouteItem[] = [
 
   {
-    icon: Users,
+    icon: Settings,
     label: "Account Settings",
     href: "/settings/account",
   },
@@ -129,7 +137,7 @@ const Sidebar = () => {
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="font-bold text-xl text-white">
-                Randevu
+                Appomania
               </span>
               <span className="text-xs text-blue-100">
                 Appointment System

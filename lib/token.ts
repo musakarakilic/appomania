@@ -1,21 +1,21 @@
 import crypto from "crypto"
-import { db } from "./db"  // Veritabanı bağlantısını içe aktarıyoruz
-import { v4 as uuidv4 } from "uuid"  // UUID oluşturmak için bir paket içe aktarıyoruz
+import { db } from "./db"  // Import database connection
+import { v4 as uuidv4 } from "uuid"  // Import a package to generate UUID
 import { getVerificationTokenByEmail } from "@/data/verification-token"
 import { getPasswordResetTokenByEmail } from "@/data/password-reset-token"
 import { getTwoFactorTokenByEmail } from "@/data/two-factor-token"
 
-// İki faktörlü kimlik doğrulama token'ı oluşturma fonksiyonu
+// Function to generate two-factor authentication token
 export const generateTwoFactorToken = async (email: string) => {
-    // 6 basamaklı bir rastgele sayı oluşturuyoruz
+    // Generate a random 6-digit number
     const token = crypto.randomInt(100_000, 1_000_000).toString()
-    // Token'ın 5 dakika sonra süresinin dolacağı zamanı belirliyoruz
+    // Set expiration time to 5 minutes from now
     const expires = new Date(new Date().getTime() + 5 * 60 * 1000)
     
-    // Veritabanında bu e-posta ile ilişkili bir mevcut token olup olmadığını kontrol ediyoruz
+    // Check if there's an existing token for this email in the database
     const existingToken = await getTwoFactorTokenByEmail(email)
 
-    // Eğer mevcut bir token varsa, onu silmeliyiz
+    // If there's an existing token, we need to delete it
     if (existingToken) {
         await db.twoFactorToken.delete({
             where: {
@@ -24,15 +24,15 @@ export const generateTwoFactorToken = async (email: string) => {
         })
     }
 
-    // Yeni iki faktörlü kimlik doğrulama token'ını oluşturuyoruz ve veritabanına kaydediyoruz
+    // Create a new two-factor authentication token and save it to the database
     const twoFactorToken = await db.twoFactorToken.create({
         data: {
-            email,  // Kullanıcının e-posta adresi
-            token,  // Oluşturulan token değeri
-            expires  // Token'ın geçerlilik süresi
+            email,  // User's email address
+            token,  // Generated token value
+            expires  // Token expiration time
         }
     })
-    // Yeni oluşturulan token'ı geri döndürüyoruz
+    // Return the newly created token
     return twoFactorToken
 }
 

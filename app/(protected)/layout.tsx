@@ -5,10 +5,10 @@ import { Poppins } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Sidebar from "./_components/sidebar";
 
-// Google Poppins fontunu tanımlıyoruz
+// Define Google Poppins font
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600"] });
 
-// Metadata'yı tanımlıyoruz
+// Define metadata
 export const metadata: Metadata = {
   title: "Appomania - Dashboard",
   description: "Appointment Management service",

@@ -1,6 +1,4 @@
-import { ExtendedUser } from "@/next-auth";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ExtendedUser } from "@/types/next-auth";
 import { useUserQuery } from "@/hooks/use-user-query";
 
 interface UserInfoProps {

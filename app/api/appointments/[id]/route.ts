@@ -18,7 +18,7 @@ export async function PATCH(
     const body = await req.json();
 
 
-    const { customerName, customerPhone, appointmentServices, startTime, endTime } = body;
+    const { customerName, customerPhone, appointmentServices, startTime, endTime, isManual } = body;
 
     // Önce mevcut appointment services'leri sil
     await db.appointmentService.deleteMany({
@@ -38,6 +38,7 @@ export async function PATCH(
         customerPhone,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
+        isManual: isManual || false,
         appointmentServices: {
           create: appointmentServices.map(({ serviceId }: { serviceId: string }) => ({
             serviceId

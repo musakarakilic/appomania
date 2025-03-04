@@ -7,7 +7,7 @@ import Google from "next-auth/providers/google";
 import { LoginSchema } from "./schemas";
 import { getUserByEmail } from "@/data/user";
 
-const authConfig = { 
+export default { 
   providers: [
     // Google ile kimlik doğrulama sağlayıcısı
     Google({
@@ -44,4 +44,3 @@ const authConfig = {
   ],
 } satisfies NextAuthConfig;
 
-export default authConfig;

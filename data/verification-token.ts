@@ -23,23 +23,23 @@ export const getVerificationTokenByToken = async (
     }
 }
 
-// `getVerificationTokenByEmail` fonksiyonu, belirli bir e-posta adresine göre doğrulama token'ını veritabanından almak için kullanılır.
-// Eğer e-posta adresine ait bir token bulunamazsa veya bir hata meydana gelirse, `null` döndürülür.
+// `getVerificationTokenByEmail` function is used to retrieve a verification token from the database based on a specific email address.
+// If no token is found for the email address or an error occurs, it returns `null`.
 export const getVerificationTokenByEmail = async (
-    email: string  // Bu fonksiyon bir e-posta adresi string'i alır
+    email: string  // This function takes an email address string
 ) => {
     try {
-        // `db.verificationToken.findFirst` fonksiyonu, veritabanında belirli bir koşula uyan ilk kaydı bulmak için kullanılır.
-        // Bu durumda, `email` değeriyle eşleşen bir doğrulama token'ı aranır.
+        // `db.verificationToken.findFirst` function is used to find the first record in the database that matches a specific condition.
+        // In this case, it searches for a verification token with the matching `email`.
         const verificationToken = await db.verificationToken.findFirst({
-            where: { email }  // Veritabanında bu e-posta adresine sahip olan ilk kaydı bulur
+            where: { email }  // Find the first record in the database with this email address
         });
         
-        // Eğer token bulunursa, bu token'ı döndürür.
+        // If a token is found, return it.
         return verificationToken;
     } 
     catch {
-        // Eğer bir hata oluşursa, `null` döndürülür.
+        // If an error occurs, return `null`.
         return null;
     }
 }

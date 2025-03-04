@@ -73,10 +73,11 @@ export function DraggableAppointment({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: 'none',
+    transition: isSortableDragging ? 'none' : 'transform 200ms ease-in-out',
     height: `${Math.max(heightInPixels, minimumHeight)}px`,
     position: 'relative' as const,
     zIndex: isSortableDragging ? 50 : 'auto',
+    touchAction: 'none', // Touch cihazlar için önemli
   }
 
   const formatCustomerName = (name: string) => {
@@ -98,11 +99,11 @@ export function DraggableAppointment({
     e.stopPropagation();
     if (isDisabled) return;
     
-    if (window.confirm(`${appointment.customerName} için randevuyu silmek istediğinize emin misiniz?`)) {
+    if (window.confirm(`${appointment.customerName} Are you sure you want to delete this appointment?`)) {
       try {
         await deleteAppointment(appointment.id);
       } catch (error) {
-        console.error("Randevu silinirken hata oluştu:", error);
+        console.error("While deleting appointment, an error occurred:", error);
       }
     }
   };
@@ -173,7 +174,7 @@ export function DraggableAppointment({
             {/* Service Name with Drag Handle */}
             <div className="flex items-center gap-2 flex-1">
               <div 
-                className="cursor-grab active:cursor-grabbing hover:bg-white/20 rounded-md"
+                className="cursor-grab active:cursor-grabbing hover:bg-white/20 rounded-md p-1"
                 {...listeners}
                 {...attributes}
               >

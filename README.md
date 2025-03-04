@@ -1,20 +1,23 @@
-# Appomania 🗓️
+# Appomania 🔐
 
 # Project title and emoji
 
 ## About
+# General project description
 Appomania is a modern appointment scheduling system built with Next.js 14 and secure authentication. This application provides a comprehensive solution for managing appointments and bookings while ensuring secure access control and user authentication.
 
 ## Features
+# List of main features
 - **Advanced Appointment System**
-  - Easy appointment scheduling with drag-and-drop interface
+  # Core appointment features
+  - Easy appointment scheduling
   - Real-time availability checking
-  - Appointment resizing and rescheduling
+  - Automated reminders and notifications
   - Calendar integration
   - Multi-service booking support
-  - Working hours and break time management
 
 - **Authentication & Security**
+  # Authentication features
   - Secure email/password authentication
   - OAuth support for social logins
   - Two-factor authentication (2FA)
@@ -22,12 +25,14 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
   - Protected routes and API endpoints
   
 - **Next.js 14 Features**
+  # Next.js 14 features used
   - Built with App Router architecture
   - Server Components for optimal performance
   - Server Actions for form handling
   - API routes for backend functionality
   
 - **User Interface**
+  # User interface features
   - Interactive calendar view
   - User-friendly booking flow
   - Responsive dashboard
@@ -35,6 +40,7 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
   - Booking confirmation notifications
 
 - **Business Features**
+  # Business management features
   - Service management
   - Staff scheduling
   - Working hours setup
@@ -44,6 +50,7 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
   - Resource allocation
 
 - **Security Features**
+  # Security features
   - CSRF protection
   - HTTP-only cookies
   - Rate limiting
@@ -52,19 +59,23 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
   - Role-based access control
 
 ## Prerequisites
+# Required prerequisites to run the project
 - Node.js 18.17 or later
 - npm, yarn, or pnpm package manager
 - Basic understanding of Next.js and React
 
 ## Getting Started
+# Steps to start the project
 
 1. **Clone the repository**
+   # Clone commands
    ```bash
    git clone <repository-url>
    cd appomania
    ```
 
 2. **Install dependencies**
+   # Install dependency commands
    ```bash
    npm install
    # or
@@ -74,6 +85,7 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
    ```
 
 3. **Environment Setup**
+   # Environment variables setup
    Create a `.env.local` file in the root directory:
    ```env
    # Required
@@ -95,6 +107,7 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
    ```
 
 4. **Run the development server**
+   # Development server commands
    ```bash
    npm run dev
    # or
@@ -104,90 +117,51 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## User Guide
-
-### Authentication
-1. **Sign up**: Create a new account by visiting the sign-up page and entering your details
-2. **Sign in**: Log in with your credentials or use social login options if enabled
-3. **Account settings**: Manage your profile and security settings through the dashboard
-
-### Appointment Management
-1. **View Calendar**: The main appointments page displays a calendar view with time slots
-2. **Create Appointment**: 
-   - Click the "Create Appointment" button in the top-right corner
-   - Fill in customer details, select services, and choose date/time
-   - Save the appointment
-
-3. **Modify Appointments**:
-   - **Drag and Drop**: Click and drag appointments to reschedule them to new time slots
-   - **Resize**: Use the resize handle at the bottom of an appointment to adjust its duration
-   - **Edit Details**: Click on an appointment to open its details for editing
-   - **Cancel**: Delete appointments through the appointment details modal
-
-4. **Filter and Search**:
-   - Use the search icon to find appointments by customer name, service, or phone number
-   - Click on search results to navigate directly to that appointment's date
-
-### Working Hours Configuration
-1. **Access Settings**: Use the settings gear icon in the calendar view
-2. **Configure Hours**: Set opening hours, closing hours, and break times for each day
-3. **Set Closed Days**: Mark specific days as closed for appointments
-
-### Navigation
-1. **Date Navigation**:
-   - Use the arrows next to the month to navigate days
-   - Click on the month name to open a date picker for quick navigation
-   - Use the "Today" button to jump to the current date
-   - Use the left and right scroll arrows to navigate through the week view
-
-## Recent Updates
-- **Appointment Resizing**: Fixed issues with the resize functionality to prevent modal opening during resizing
-- **Calendar Display**: Improved calendar view to correctly display the current date on page load
-- **Localization**: Updated all date formatting to use English locale
-- **Code Cleanup**: Removed debug console logging for improved performance
-- **Visual Improvements**: Enhanced the resize handle UI for better usability
-- **Event Handling**: Fixed event propagation issues during appointment interactions
+   # Browser access link
 
 ## Project Structure
+# Project directory structure explanation
 ```
 ├── app/
 │   ├── api/           # API routes
-│   ├── auth/          # Authentication pages
-│   ├── appointments/  # Appointment pages
-│   ├── dashboard/     # Admin dashboard
-│   ├── components/    # Reusable components
-│   └── layout.tsx     # Root layout
-├── lib/               # Utility functions
-├── types/             # TypeScript types
-└── public/            # Static assets
+│   ├── auth/         # Authentication pages
+│   ├── appointments/ # Appointment pages
+│   ├── dashboard/    # Admin dashboard
+│   ├── components/   # Reusable components
+│   └── layout.tsx    # Root layout
+├── lib/              # Utility functions
+├── types/            # TypeScript types
+└── public/           # Static assets
 ```
 
 ## Tech Stack
+# Technologies used
 - **Frontend**
+  # Frontend technologies
   - Next.js 14 (React framework)
   - TypeScript (Type safety)
   - Tailwind CSS (Styling)
   - React Hook Form (Form handling)
-  - date-fns (Date formatting)
-  - Lucide React (Icons)
-  - DND Kit (Drag and drop functionality)
+  - Full Calendar (Calendar UI)
   - Zod (Schema validation)
 
 - **Backend & Database**
+  # Backend technologies
   - NextAuth.js (Authentication)
   - Bcrypt (Password hashing)
   - JWT (Token handling)
   - Prisma (Database ORM)
   - PostgreSQL (Database)
-  - React Query (Data fetching and caching)
+  - Redis (Caching)
 
 - **Development Tools**
+  # Development tools
   - ESLint (Code linting)
   - Prettier (Code formatting)
   - Husky (Git hooks)
 
 ## API Routes
+# API endpoints and descriptions
 - **Authentication**
   - `POST /api/auth/signup` - User registration
   - `POST /api/auth/signin` - User login
@@ -200,20 +174,8 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
   - `PUT /api/appointments/update` - Update appointment
   - `DELETE /api/appointments/cancel` - Cancel appointment
 
-- **Settings**
-  - `GET /api/settings/working-hours` - Retrieve working hours configuration
-  - `POST /api/settings/working-hours` - Update working hours configuration
-
-## Troubleshooting
-
-### Common Issues
-1. **Appointments not showing**: Ensure you've configured working hours for the respective days
-2. **Calendar shows wrong dates**: Refresh the page or click the "Today" button to reset the view
-3. **Appointment drag fails**: Check for overlapping appointments or closed time slots
-4. **Cannot resize appointments**: Ensure the appointment has sufficient space in the schedule
-5. **Login issues**: Verify your database connection and authentication settings
-
 ## Contributing
+# Steps for contributing to the project
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
@@ -221,6 +183,7 @@ Appomania is a modern appointment scheduling system built with Next.js 14 and se
 5. Open a Pull Request
 
 ## Deployment
+# Deployment information and steps
 The project is optimized for deployment on Vercel:
 
 1. Push your code to GitHub
@@ -231,11 +194,13 @@ The project is optimized for deployment on Vercel:
 For other platforms, check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment).
 
 ## Learn More
+# Useful links for more information
 - [Next.js Documentation](https://nextjs.org/docs)
 - [NextAuth.js Documentation](https://next-auth.js.org)
 - [Prisma Documentation](https://www.prisma.io/docs)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [DND Kit Documentation](https://docs.dndkit.com)
+- [Full Calendar Documentation](https://fullcalendar.io/docs)
 
 ## License
+# License information
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

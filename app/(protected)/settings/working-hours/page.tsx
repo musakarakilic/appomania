@@ -83,7 +83,7 @@ export default function WorkingHoursPage() {
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
         <div className="flex gap-2 items-center text-amber-800">
           <AlertCircle size={18} />
-          <p className="text-sm">Days marked as "Closed" will not be available for appointments in the booking system.</p>
+          <p className="text-sm">Days marked as &quot;Closed&quot; will not be available for appointments in the booking system.</p>
         </div>
       </div>
 

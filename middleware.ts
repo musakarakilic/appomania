@@ -1,5 +1,5 @@
-import authConfig from "./auth.config" // Auth yapılandırmasını içe aktarıyoruz.
-import NextAuth from "next-auth" // NextAuth kimlik doğrulama kütüphanesini içe aktarıyoruz.
+import { auth } from "@/auth"
+import { NextResponse } from "next/server"
 
 import { 
   DEFAULT_LOGIN_REDIRECT, // Oturum açtıktan sonra yönlendirilecek varsayılan URL.
@@ -9,8 +9,6 @@ import {
 } from "./routes" // Yollarla ilgili yapılandırmaları içe aktarıyoruz.
 
 import { getUserById } from "./data/user" // Kullanıcı verilerini almak için bir fonksiyon içe aktarıyoruz.
-
-const { auth } = NextAuth(authConfig) // NextAuth kimlik doğrulama middleware'ini yapılandırıyoruz.
  
 export default auth((req) => {
   const { nextUrl } = req // İstek URL'sini alıyoruz.
@@ -22,35 +20,35 @@ export default auth((req) => {
 
   // Eğer API kimlik doğrulama yolundaysak, herhangi bir işlem yapmadan devam ediyoruz.
   if(isApiAuthRoute){
-    return null
+    return NextResponse.next()
   }
 
   // Eğer kimlik doğrulama gerektiren bir rotadaysak:
   if(isAuthRoute){
     if(isLoggedIn){ 
       // Eğer kullanıcı zaten oturum açmışsa, onu varsayılan yönlendirme rotasına yönlendiriyoruz.
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
+      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
     }
-    return null // Eğer oturum açmamışsa, herhangi bir işlem yapmadan devam ediyoruz.
+    return NextResponse.next() // Eğer oturum açmamışsa, herhangi bir işlem yapmadan devam ediyoruz.
   }
 
   // Eğer kullanıcı oturum açmamış ve rota genel bir rota değilse:
   if(!isLoggedIn && !isPublicRoute) {
     // Kullanıcıyı oturum açma sayfasına yönlendiriyoruz.
-    return Response.redirect(new URL("/auth/login", nextUrl))
+    return NextResponse.redirect(new URL("/auth/login", nextUrl))
   }
 
   // Yukarıdaki durumlar gerçekleşmezse, herhangi bir işlem yapmadan devam ediyoruz.
-  return null
+  return NextResponse.next()
 })
  
-// Bu bölümde, middleware'in hangi yollar için çalışacağını belirtiyoruz.
+// Here we specify which paths the middleware will run for.
 export const config = {
   matcher: [
-    // Next.js'in dahili yollarını ve statik dosyaları geçmek için,
-    // arama parametrelerinde bulunmadıkça bu dosyaları es geçiyoruz.
+    // To skip Next.js's internal paths and static files,
+    // we bypass these files unless they appear in search parameters.
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // API yolları için her zaman çalıştırıyoruz.
+    // Always run for API routes.
     '/(api|trpc)(.*)',
   ],
 }

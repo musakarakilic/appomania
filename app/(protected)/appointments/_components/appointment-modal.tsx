@@ -19,6 +19,7 @@ import { useServicesQuery } from "@/hooks/use-services-query"
 import { Service } from "@/types/service"
 import { Appointment } from "@/types/appointment"
 import { useRecentCustomersQuery } from "@/hooks/use-recent-customers-query"
+import { Switch } from "@/components/ui/switch"
 
 interface AppointmentModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ const AppointmentModal = ({
   const [customerName, setCustomerName] = useState("")
   const [customerPhone, setCustomerPhone] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [ignoreWorkingHours, setIgnoreWorkingHours] = useState(false)
 
   const resetForm = useCallback(() => {
     setCustomerName("");
@@ -55,6 +57,7 @@ const AppointmentModal = ({
     setDate(startOfTomorrow());
     setTime("09:00");
     setError(null);
+    setIgnoreWorkingHours(false);
   }, []);
 
   // Gereksiz useEffect'i kaldıralım
@@ -66,9 +69,13 @@ const AppointmentModal = ({
         setSelectedServices(initialAppointment.appointmentServices.map(as => as.service.id))
         setCustomerName(initialAppointment.customerName)
         setCustomerPhone(initialAppointment.customerPhone)
+        setIgnoreWorkingHours(initialAppointment.isManual || false)
       } else if (type === 'create' && initialAppointment?.startTime) {
         setDate(parseISO(initialAppointment.startTime))
         setTime(format(parseISO(initialAppointment.startTime), 'HH:mm'))
+        if (initialAppointment.isManual !== undefined) {
+          setIgnoreWorkingHours(initialAppointment.isManual)
+        }
       }
     }
   }, [isOpen, type, initialAppointment])
@@ -166,7 +173,8 @@ const AppointmentModal = ({
           appointmentServices: selectedServices.map(serviceId => ({
             serviceId,
             service: services.find(s => s.id === serviceId)!
-          }))
+          })),
+          isManual: ignoreWorkingHours
         })
         toast.success("Randevu başarıyla güncellendi")
       } else {
@@ -175,18 +183,25 @@ const AppointmentModal = ({
           customerPhone: customerPhone.trim(),
           startTime: startTimeISO,
           endTime: endTimeISO,
-          serviceIds: selectedServices
+          serviceIds: selectedServices,
+          isManual: ignoreWorkingHours
         })
         toast.success("Randevu başarıyla oluşturuldu")
       }
 
       onClose()
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Bir hata oluştu"
+      let errorMessage = error instanceof Error ? error.message : "Bir hata oluştu"
+      
+      // Randevu saati dolu hatası için özel mesaj
+      if (errorMessage === "Appointment time is not available") {
+        errorMessage = "This time slot is already booked"
+      }
+      
       setError(errorMessage)
       toast.error(errorMessage)
     }
-  }, [date, time, selectedServices, customerName, customerPhone, type, initialAppointment, services, updateAppointment, createAppointment, onClose, calculateTotalDuration])
+  }, [date, time, selectedServices, customerName, customerPhone, type, initialAppointment, services, updateAppointment, createAppointment, onClose, calculateTotalDuration, ignoreWorkingHours])
 
   const handleTimeChange = useCallback((newTime: string) => {
     setTime(newTime)
@@ -324,60 +339,35 @@ const AppointmentModal = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">3</div>
-                  <h3 className="font-medium">Date and Time</h3>
+                  <h3 className="font-medium">Date & Time</h3>
                 </div>
-
-                <div className="pl-8 grid grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        type="button"
-                        variant={isSameDay(date, new Date()) ? "default" : "outline"}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setDate(new Date())
-                        }}
-                        className="w-full"
-                      >
-                        Today
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={isSameDay(date, startOfTomorrow()) ? "default" : "outline"}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setDate(startOfTomorrow())
-                        }}
-                        className="w-full"
-                      >
-                        Tomorrow
-                      </Button>
-                    </div>
-
-                    <div className="border rounded-lg overflow-hidden">
-                      <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={(newDate) => newDate && setDate(newDate)}
-                        className="rounded-md"
-                        appointmentDates={[]}
+                
+                <div className="pl-8 space-y-4">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(date) => date && setDate(date)}
+                    className="border rounded-md p-3"
+                  />
+                  <div className="pt-2">
+                    <Label htmlFor="time">Time</Label>
+                    <div className="mt-1">
+                      <TimeSelect
+                        value={time}
+                        onValueChange={handleTimeChange}
+                        disabled={isLoading}
+                        ignoreWorkingHours={ignoreWorkingHours}
                       />
                     </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <TimeSelect 
-                      value={time}
-                      onValueChange={handleTimeChange}
-                      disabled={isLoadingServices || isCreating || isUpdating || !date}
+                  
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Switch
+                      id="ignore-working-hours"
+                      checked={ignoreWorkingHours}
+                      onCheckedChange={setIgnoreWorkingHours}
                     />
-
-                    {date && (
-                      <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                        Selected date: {format(date, "d MMMM yyyy", { locale: enUS })}
-                        {time && <div className="mt-1">Selected time: {time}</div>}
-                      </div>
-                    )}
+                    <Label htmlFor="ignore-working-hours">Ignore working hours</Label>
                   </div>
                 </div>
               </div>
@@ -444,7 +434,17 @@ const AppointmentModal = ({
                     value={time}
                     onValueChange={handleTimeChange}
                     disabled={isLoadingServices || isCreating || isUpdating || !date}
+                    ignoreWorkingHours={ignoreWorkingHours}
                   />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Switch
+                    id="ignore-working-hours-normal"
+                    checked={ignoreWorkingHours}
+                    onCheckedChange={setIgnoreWorkingHours}
+                  />
+                  <Label htmlFor="ignore-working-hours-normal">Ignore working hours</Label>
                 </div>
               </div>
             </div>
