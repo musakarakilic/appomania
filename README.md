@@ -1,7 +1,7 @@
 # Appomania - Modern Appointment Management System 📅
 
-## Demo
-🌐 **Production URL:** [https://appomania.vercel.app/](https://appomania.vercel.app/)
+## Important Note
+You should sign in with Google account. Other options still in maintenance
 
 ## About
 Appomania is a modern appointment scheduling system built with Next.js 14, featuring a robust authentication system and intuitive appointment management interface. Perfect for businesses that need to manage their appointments efficiently.
